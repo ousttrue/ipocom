@@ -155,29 +155,52 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_skeleton:
     header:
-      values: 
+      header:
+        magic: 0
+        head_key: 0
+        head: 0
+        ftyp: 0
+        ftyp0: 0
+        ftyp1: 0
+        ftyp2: 0
+        ftyp3: 0
+        vrsn_key: 0
+        vrsn0: 0
+        vrsn1: 0
+        sndf_key: 0
+        sndf: 0
+        ipad_key: 0
+        ipad0: 0
+        ipad1: 0
+        rcvp_key: 0
+        rcvp0: 0
+        rcvp1: 0
+      skdf_key: 0
+      skdf: 0
+      bons: 0
     bones: []
   m_frame:
     header:
-      magic: 0
-      head_key: 0
-      head: 0
-      ftyp: 0
-      ftyp0: 0
-      ftyp1: 0
-      ftyp2: 0
-      ftyp3: 0
-      vrsn_key: 0
-      vrsn0: 0
-      vrsn1: 0
-      sndf_key: 0
-      sndf: 0
-      ipad_key: 0
-      ipad0: 0
-      ipad1: 0
-      rcvp_key: 0
-      rcvp0: 0
-      rcvp1: 0
+      header:
+        magic: 0
+        head_key: 0
+        head: 0
+        ftyp: 0
+        ftyp0: 0
+        ftyp1: 0
+        ftyp2: 0
+        ftyp3: 0
+        vrsn_key: 0
+        vrsn0: 0
+        vrsn1: 0
+        sndf_key: 0
+        sndf: 0
+        ipad_key: 0
+        ipad0: 0
+        ipad1: 0
+        rcvp_key: 0
+        rcvp0: 0
+        rcvp1: 0
       fram_key: 0
       fram: 0
       fnum_key: 0

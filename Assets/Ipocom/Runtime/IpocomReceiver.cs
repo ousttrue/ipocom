@@ -38,7 +38,7 @@ namespace Ipocom
         /// <param name="message"></param>
         void OnReceiveOnThread(byte[] message)
         {
-            var parsed = SmfParser.Parse(message);
+            var parsed = SonyMotionFormat.Parse(message);
             if (parsed != null)
             {
                 m_queue.Enqueue(parsed);
