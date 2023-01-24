@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net.Sockets;
 using System.Net;
+using UnityEngine.Profiling;
 
 namespace Ipocom
 {
@@ -50,6 +51,7 @@ namespace Ipocom
 
             AsyncCallback callback = (IAsyncResult ar) =>
             {
+                Profiler.BeginSample("BeginReceive AsyncCallback");
                 var udp = m_udp;
                 if (udp == null)
                 {
@@ -74,6 +76,7 @@ namespace Ipocom
                 {
                     s.OnError(ex);
                 }
+                Profiler.EndSample();
             };
 
             {

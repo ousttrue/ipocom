@@ -1,0 +1,18 @@
+{
+    "name": "ipocom.Tests",
+    "rootNamespace": "",
+    "references": [
+        "GUID:1f8df9e467a8a724f89ad1b157f5ea8b"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
