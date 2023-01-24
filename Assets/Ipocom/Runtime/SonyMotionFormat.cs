@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using UnityEngine;
 
 namespace Ipocom
@@ -173,7 +174,7 @@ namespace Ipocom
             Time,
             Btrs,
             Bons,
-            Btdt,            
+            Btdt,
             Bndt,
             Bnid,
             Tran,
@@ -231,64 +232,341 @@ namespace Ipocom
             }
         }
 
+        public static Field ReadField(this BytesReader r)
+        {
+            var length = r.GetInt32();
+            var type = r.Get(4);
+            var value = r.Get(length);
+            return new Field
+            {
+                Type = GetFieldType(type),
+                Value = value,
+            };
+        }
+
         // https://github.com/seagetch/mcp-receiver/blob/main/doc/Protocol.md
         public static IEnumerable<Field> ParseFields(ArraySegment<byte> bytes)
         {
             var r = new BytesReader(bytes);
             while (!r.IsEnd)
             {
-                var length = r.GetInt32();
-                var type = r.Get(4);
-                var value = r.Get(length);
-                yield return new Field
+                yield return r.ReadField();
+            }
+        }
+
+        [Serializable]
+        public struct Head
+        {
+            public ArraySegment<byte> FileType;
+            public byte Version;
+
+            // head
+            //   ftyp
+            //   vrsn
+            public static Head FromField(Field head)
+            {
+                if (head.Type != FieldTypes.Head)
                 {
-                    Type = GetFieldType(type),
-                    Value = value,
+                    throw new ArgumentException("not head");
+                }
+                var it = ParseFields(head.Value).GetEnumerator();
+                it.MoveNext();
+                var ftyp = it.Current;
+                it.MoveNext();
+                var vrsn = it.Current;
+                return new Head
+                {
+                    FileType = ftyp.Value,
+                    Version = vrsn.Value.Array[vrsn.Value.Offset],
                 };
             }
         }
 
+        [Serializable]
+
+        public struct Sndf
+        {
+            public ArraySegment<byte> IpAddress;
+            public UInt16 ReceivePort;
+            // sndf
+            //   ipad
+            //   rcvp
+            public static Sndf FromField(Field sndf)
+            {
+                if (sndf.Type != FieldTypes.Sndf)
+                {
+                    throw new ArgumentException("not sndf");
+                }
+                var it = ParseFields(sndf.Value).GetEnumerator();
+                it.MoveNext();
+                var ipad = it.Current;
+                it.MoveNext();
+                var rcvp = it.Current;
+                return new Sndf
+                {
+                    IpAddress = ipad.Value,
+                    ReceivePort = BitConverter.ToUInt16(rcvp.Value.Array, rcvp.Value.Offset),
+                };
+            }
+        }
+
+        [Serializable]
+
+        public struct Bnid
+        {
+            public UInt16 BoneId;
+            public static Bnid FromField(Field bnid)
+            {
+                if (bnid.Type != FieldTypes.Bnid)
+                {
+                    throw new ArgumentException("not bnid");
+                }
+                return new Bnid
+                {
+                    BoneId = BitConverter.ToUInt16(bnid.Value.Array, bnid.Value.Offset),
+                };
+            }
+        }
+
+        [Serializable]
+
+        public struct Pbid
+        {
+            public UInt16 ParentBoneId;
+            public static Pbid FromField(Field pbid)
+            {
+                if (pbid.Type != FieldTypes.Pbid)
+                {
+                    throw new ArgumentException("not pbid");
+                }
+                return new Pbid
+                {
+                    ParentBoneId = BitConverter.ToUInt16(pbid.Value.Array, pbid.Value.Offset),
+                };
+            }
+        }
+
+        [Serializable]
+
+        public struct Tran
+        {
+            public float rx;
+            public float ry;
+            public float rz;
+            public float rw;
+            public float tx;
+            public float ty;
+            public float tz;
+            public static Tran FromField(Field tran)
+            {
+                if (tran.Type != FieldTypes.Tran)
+                {
+                    throw new ArgumentException("not tran");
+                }
+                return new Tran
+                {
+                    rx = BitConverter.ToSingle(tran.Value.Array, tran.Value.Offset),
+                    ry = BitConverter.ToSingle(tran.Value.Array, tran.Value.Offset + 4),
+                    rz = BitConverter.ToSingle(tran.Value.Array, tran.Value.Offset + 8),
+                    rw = BitConverter.ToSingle(tran.Value.Array, tran.Value.Offset + 12),
+                    tx = BitConverter.ToSingle(tran.Value.Array, tran.Value.Offset + 16),
+                    ty = BitConverter.ToSingle(tran.Value.Array, tran.Value.Offset + 20),
+                    tz = BitConverter.ToSingle(tran.Value.Array, tran.Value.Offset + 24),
+                };
+            }
+
+            public Quaternion Rotation()
+            {
+                return new Quaternion(
+                    rx,
+                    ry,
+                    rz,
+                    rw
+                );
+            }
+
+            public Vector3 Translation()
+            {
+                return new Vector3(tx, ty, tz);
+            }
+        }
+
+        [Serializable]
+
+        public struct Bndt
+        {
+            public Bnid BoneId;
+            public Pbid ParentBoneId;
+            public Tran Transformation;
+
+            public static Bndt FromField(Field bndt)
+            {
+                if (bndt.Type != FieldTypes.Bndt)
+                {
+                    throw new ArgumentException("not bndt");
+                }
+                var it = ParseFields(bndt.Value).GetEnumerator();
+                it.MoveNext();
+                var bnid = it.Current;
+                it.MoveNext();
+                var pbid = it.Current;
+                it.MoveNext();
+                var tran = it.Current;
+                return new Bndt
+                {
+                    BoneId = Bnid.FromField(bnid),
+                    ParentBoneId = Pbid.FromField(pbid),
+                    Transformation = Tran.FromField(tran),
+                };
+            }
+        }
+
+        [Serializable]
+
+        public class Skdf
+        {
+            public Bndt[] Bones = new Bndt[BONE_COUNT];
+
+            // skdf
+            //   bons
+            //     bndt x 27
+            public static Skdf FromField(Field skdf)
+            {
+                if (skdf.Type != FieldTypes.Skdf)
+                {
+                    throw new ArgumentException("not skdf");
+                }
+                var bons = ReadField(new BytesReader(skdf.Value));
+                if (bons.Type != FieldTypes.Bons)
+                {
+                    throw new ArgumentException("not bons");
+                }
+                var skeleton = new Skdf();
+                int i = 0;
+                foreach (var bndt in ParseFields(bons.Value))
+                {
+                    skeleton.Bones[i] = Bndt.FromField(bndt);
+                    ++i;
+                }
+                if (i != BONE_COUNT)
+                {
+                    throw new ArgumentException($"{i}!={BONE_COUNT}");
+                }
+                return skeleton;
+            }
+        }
+
+        [Serializable]
+
+        public struct Btdt
+        {
+            public Bnid BoneId;
+            public Tran Transformation;
+
+            public static Btdt FromField(Field btdt)
+            {
+                if (btdt.Type != FieldTypes.Btdt)
+                {
+                    throw new ArgumentException("not btdt");
+                }
+                var it = ParseFields(btdt.Value).GetEnumerator();
+                it.MoveNext();
+                var bnid = it.Current;
+                it.MoveNext();
+                var tran = it.Current;
+                return new Btdt
+                {
+                    BoneId = Bnid.FromField(bnid),
+                    Transformation = Tran.FromField(tran),
+                };
+            }
+        }
+
+        [Serializable]
+
+        public class Fram
+        {
+            public UInt32 FrameNumber;
+            public UInt32 Time;
+            public Btdt[] BoneTransformations = new Btdt[27];
+
+            // fram
+            //   fnum
+            //   time
+            //   btrs
+            //     btdt x 27
+            public static Fram FromField(Field fram)
+            {
+                if (fram.Type != FieldTypes.Fram)
+                {
+                    throw new ArgumentException("not fram");
+                }
+                var it = ParseFields(fram.Value).GetEnumerator();
+                it.MoveNext();
+                var fnum = it.Current;
+                it.MoveNext();
+                var time = it.Current;
+                it.MoveNext();
+                var btrs = it.Current;
+                var frames = new Fram
+                {
+                    FrameNumber = BitConverter.ToUInt32(fnum.Value.Array, fnum.Value.Offset),
+                    Time = BitConverter.ToUInt32(time.Value.Array, time.Value.Offset),
+                };
+                var i = 0;
+                foreach (var btdt in ParseFields(btrs.Value))
+                {
+                    frames.BoneTransformations[i] = Btdt.FromField(btdt);
+                    ++i;
+                }
+                if (i != BONE_COUNT)
+                {
+                    throw new ArgumentException($"{i}!={BONE_COUNT}");
+                }
+                return frames;
+            }
+        }
+
+        public static readonly byte[] FileType = Encoding.ASCII.GetBytes("sony motion format");
+        public static readonly byte Version = 1;
+
         public static object Parse(byte[] bytes)
         {
-            if (bytes.Length == SKELETON_BYTES_SIZE)
+            var r = new BytesReader(bytes);
+
+            // header
+            var head = Head.FromField(r.ReadField());
+            if (!head.FileType.SequenceEqual(FileType))
             {
-                var header = new SkeletonHeader[1];
-                using (var pin = new ArrayPin(header))
-                {
-                    Marshal.Copy(bytes, 0, pin.Ptr, SKELETON_HEADER_SIZE);
-                }
-                var bones = new SkeletonBone[BONE_COUNT];
-                using (var pin = new ArrayPin(bones))
-                {
-                    Marshal.Copy(bytes, SKELETON_HEADER_SIZE, pin.Ptr, BONE_COUNT * SKELETON_BONE_SIZE);
-                }
-                return new SkeletonMessage
-                {
-                    header = header[0],
-                    bones = bones,
-                };
+                throw new ArgumentException($"invalid file type: {Encoding.ASCII.GetString(head.FileType.Array, head.FileType.Offset, head.FileType.Count)}");
             }
-            else if (bytes.Length == FRAME_BYTES_SIZE)
+            if (head.Version != Version)
             {
-                var header = new FrameHeader[1];
-                using (var pin = new ArrayPin(header))
-                {
-                    Marshal.Copy(bytes, 0, pin.Ptr, FRAME_HEADER_SIZE);
-                }
-                var bones = new FrameBone[BONE_COUNT];
-                using (var pin = new ArrayPin(bones))
-                {
-                    Marshal.Copy(bytes, FRAME_HEADER_SIZE, pin.Ptr, BONE_COUNT * FRAME_BONE_SIZE);
-                }
-                return new FrameMessage
-                {
-                    header = header[0],
-                    bones = bones,
-                };
+                throw new ArgumentException($"invalid version: {head.Version}");
             }
-            else
+            var sndf = Sndf.FromField(r.ReadField());
+
+            var f = r.ReadField();
+            switch (f.Type)
             {
-                throw new ArgumentException($"{bytes.Length}");
+                case FieldTypes.Skdf:
+                    return new SkeletonMessage
+                    {
+                        head = head,
+                        sndf = sndf,
+                        skdf = Skdf.FromField(f),
+                    };
+
+                case FieldTypes.Fram:
+                    return new FrameMessage
+                    {
+                        head = head,
+                        sndf = sndf,
+                        fram = Fram.FromField(f),
+                    };
+
+                default:
+                    throw new ArgumentException();
             }
         }
     }
