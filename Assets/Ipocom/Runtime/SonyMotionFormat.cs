@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using UnityEngine;
 
@@ -157,6 +158,96 @@ namespace Ipocom
         static readonly int FRAME_HEADER_SIZE = Marshal.SizeOf<FrameHeader>();
         static readonly int FRAME_BONE_SIZE = Marshal.SizeOf<FrameBone>();
         static readonly int FRAME_BYTES_SIZE = FRAME_HEADER_SIZE + BONE_COUNT * FRAME_BONE_SIZE;
+
+        public enum FieldTypes
+        {
+            Head,
+            Sndf,
+            Skdf,
+            Fram,
+            Ftyp,
+            Vrsn,
+            Ipad,
+            Rcvp,
+            Fnum,
+            Time,
+            Btrs,
+            Bons,
+            Btdt,            
+            Bndt,
+            Bnid,
+            Tran,
+            Pbid,
+        }
+        public static bool IsNested(this FieldTypes t)
+        {
+            switch (t)
+            {
+                case FieldTypes.Head:
+                case FieldTypes.Sndf:
+                case FieldTypes.Skdf:
+                case FieldTypes.Fram:
+                case FieldTypes.Bons:
+                case FieldTypes.Btrs:
+                case FieldTypes.Btdt:
+                case FieldTypes.Bndt:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        static readonly IReadOnlyDictionary<UInt32, FieldTypes> s_keyMap = InitKeyMap();
+
+        static Dictionary<UInt32, FieldTypes> InitKeyMap()
+        {
+            var map = new Dictionary<UInt32, FieldTypes>();
+            foreach (FieldTypes type in Enum.GetValues(typeof(FieldTypes)))
+            {
+                var bytes = System.Text.Encoding.ASCII.GetBytes(type.ToString().ToLower());
+                map.Add(BitConverter.ToUInt32(bytes, 0), type);
+            }
+            return map;
+        }
+
+        public static FieldTypes GetFieldType(ArraySegment<byte> key)
+        {
+            if (s_keyMap.TryGetValue(BitConverter.ToUInt32(key.Array, key.Offset), out FieldTypes type))
+            {
+                return type;
+            }
+            throw new ArgumentException($"unknown key: {System.Text.Encoding.ASCII.GetString(key.Array, key.Offset, key.Count)}");
+        }
+
+        public struct Field
+        {
+            public FieldTypes Type;
+            public ArraySegment<byte> Value;
+
+            public void Deconstruct(out FieldTypes type, out ArraySegment<byte> value)
+            {
+                type = Type;
+                value = Value;
+            }
+        }
+
+        // https://github.com/seagetch/mcp-receiver/blob/main/doc/Protocol.md
+        public static IEnumerable<Field> ParseFields(ArraySegment<byte> bytes)
+        {
+            var r = new BytesReader(bytes);
+            while (!r.IsEnd)
+            {
+                var length = r.GetInt32();
+                var type = r.Get(4);
+                var value = r.Get(length);
+                yield return new Field
+                {
+                    Type = GetFieldType(type),
+                    Value = value,
+                };
+            }
+        }
+
         public static object Parse(byte[] bytes)
         {
             if (bytes.Length == SKELETON_BYTES_SIZE)
