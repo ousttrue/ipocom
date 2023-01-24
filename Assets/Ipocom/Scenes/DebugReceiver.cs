@@ -4,15 +4,15 @@ using UnityEngine;
 
 public class DebugReceiver : MonoBehaviour
 {
-    public Ipocom.SkeletonMessage m_skeleton;
-    public Ipocom.FrameMessage m_frame;
+    public Ipocom.SonyMotionFormat.SkeletonMessage m_skeleton;
+    public Ipocom.SonyMotionFormat.FrameMessage m_frame;
 
-    public void OnSkeleton(Ipocom.SkeletonMessage skeleton)
+    public void OnSkeleton(Ipocom.SonyMotionFormat.SkeletonMessage skeleton)
     {
         m_skeleton = skeleton;
     }
 
-    public void OnFrame(Ipocom.FrameMessage frame)
+    public void OnFrame(Ipocom.SonyMotionFormat.FrameMessage frame)
     {
         m_frame = frame;
     }

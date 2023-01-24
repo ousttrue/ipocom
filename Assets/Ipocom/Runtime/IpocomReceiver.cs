@@ -6,8 +6,8 @@ namespace Ipocom
 {
     public class IpocomReceiver : MonoBehaviour
     {
-        public UnityEngine.Events.UnityEvent<SkeletonMessage> m_onSkeleton;
-        public UnityEngine.Events.UnityEvent<FrameMessage> m_onFrame;
+        public UnityEngine.Events.UnityEvent<SonyMotionFormat.SkeletonMessage> m_onSkeleton;
+        public UnityEngine.Events.UnityEvent<SonyMotionFormat.FrameMessage> m_onFrame;
         public int m_port = 12351;
         UdpStream m_udp;
 
@@ -38,7 +38,7 @@ namespace Ipocom
         /// <param name="message"></param>
         void OnReceiveOnThread(byte[] message)
         {
-            var parsed = SonyMotionFormat.Parse(message);
+            var parsed = SonyMotionFormat.Parser.Parse(message);
             if (parsed != null)
             {
                 m_queue.Enqueue(parsed);
@@ -51,12 +51,12 @@ namespace Ipocom
             {
                 switch (data)
                 {
-                    case SkeletonMessage skeleton:
+                    case SonyMotionFormat.SkeletonMessage skeleton:
                         Debug.Log($"{skeleton}");
                         m_onSkeleton.Invoke(skeleton);
                         break;
 
-                    case FrameMessage frame:
+                    case SonyMotionFormat.FrameMessage frame:
                         m_onFrame.Invoke(frame);
                         break;
 
