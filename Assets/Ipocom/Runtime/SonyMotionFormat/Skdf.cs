@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.InteropServices;
 
 namespace Ipocom.SonyMotionFormat
 {
@@ -6,7 +7,8 @@ namespace Ipocom.SonyMotionFormat
 
     public class Skdf
     {
-        public Bndt[] Bones = new Bndt[Definition.BONE_COUNT];
+        // public Bndt[] Bones = new Bndt[Definition.BONE_COUNT];
+        public Box<Bndt>[] Bones = new Box<Bndt>[Definition.BONE_COUNT];
 
         // skdf
         //   bons
@@ -22,16 +24,16 @@ namespace Ipocom.SonyMotionFormat
             {
                 throw new ArgumentException("not bons");
             }
-            var skeleton = new Skdf();
-            int i = 0;
-            foreach (var bndt in Parser.ParseBoxes(bons.Value))
+#if DEBUG
+            if (Marshal.SizeOf<Box<Bndt>>() * Definition.BONE_COUNT != bons.Value.Count)
             {
-                skeleton.Bones[i] = Bndt.FromBox(bndt);
-                ++i;
+                throw new ArgumentException("invalid size");
             }
-            if (i != Definition.BONE_COUNT)
+#endif                
+            var skeleton = new Skdf();
+            using (var pin = new ArrayPin(skeleton.Bones))
             {
-                throw new ArgumentException($"{i}!={Definition.BONE_COUNT}");
+                Marshal.Copy(bons.Value.Array, bons.Value.Offset, pin.Ptr, bons.Value.Count);
             }
             return skeleton;
         }

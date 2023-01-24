@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.InteropServices;
 
 namespace Ipocom.SonyMotionFormat
 {
@@ -12,5 +13,14 @@ namespace Ipocom.SonyMotionFormat
             type = Type;
             value = Value;
         }
+    }
+
+    [Serializable]
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public struct Box<T> where T : struct
+    {
+        public UInt32 Length;
+        public UInt32 BoxName;
+        public T Value;
     }
 }

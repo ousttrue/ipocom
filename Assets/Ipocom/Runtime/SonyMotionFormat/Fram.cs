@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.InteropServices;
 using UnityEngine;
 
 namespace Ipocom.SonyMotionFormat
@@ -9,7 +10,7 @@ namespace Ipocom.SonyMotionFormat
     {
         public UInt32 FrameNumber;
         public UInt32 Time;
-        public Btdt[] BoneTransformations = new Btdt[27];
+        public Box<Btdt>[] BoneTransformations = new Box<Btdt>[27];
 
         // fram
         //   fnum
@@ -29,20 +30,24 @@ namespace Ipocom.SonyMotionFormat
             var time = it.Current;
             it.MoveNext();
             var btrs = it.Current;
+            if (btrs.Type != BoxTypes.Btrs)
+            {
+                throw new ArgumentException("not btrs");
+            }
+#if DEBUG
+            if (Marshal.SizeOf<Box<Btdt>>() * Definition.BONE_COUNT != btrs.Value.Count)
+            {
+                throw new ArgumentException("invalid size");
+            }
+#endif                
             var frames = new Fram
             {
                 FrameNumber = BitConverter.ToUInt32(fnum.Value.Array, fnum.Value.Offset),
                 Time = BitConverter.ToUInt32(time.Value.Array, time.Value.Offset),
             };
-            var i = 0;
-            foreach (var btdt in Parser.ParseBoxes(btrs.Value))
+            using (var pin = new ArrayPin(frames.BoneTransformations))
             {
-                frames.BoneTransformations[i] = Btdt.FromBox(btdt);
-                ++i;
-            }
-            if (i != Definition.BONE_COUNT)
-            {
-                throw new ArgumentException($"{i}!={Definition.BONE_COUNT}");
+                Marshal.Copy(btrs.Value.Array, btrs.Value.Offset, pin.Ptr, btrs.Value.Count);
             }
             return frames;
         }
