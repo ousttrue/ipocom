@@ -19,7 +19,7 @@ namespace Ipocom
         void OnEnable()
         {
             Debug.Log($"OnEnable: start udp: {m_port}");
-            m_udp = new UdpClientStream(m_port, new UdpState
+            m_udp = new UdpSocketStream(m_port, new UdpState
             {
                 OnError = ex => Debug.LogException(ex),
                 OnReceive = OnReceiveOnThread,
@@ -36,7 +36,7 @@ namespace Ipocom
         /// UDP 受信スレッドで動作する
         /// </summary>
         /// <param name="message"></param>
-        void OnReceiveOnThread(byte[] message)
+        void OnReceiveOnThread(ArraySegment<byte> message)
         {
             var parsed = SonyMotionFormat.Parser.Parse(message);
             if (parsed != null)

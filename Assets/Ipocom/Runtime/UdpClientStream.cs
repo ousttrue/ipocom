@@ -13,8 +13,8 @@ namespace Ipocom
         {
             try
             {
-                var e = new IPEndPoint(IPAddress.Any, port);
-                m_udp = new UdpClient(e);
+                var ep = new IPEndPoint(IPAddress.Any, port);
+                m_udp = new UdpClient(ep);
                 BeginRead(state);
             }
             catch (Exception ex)
@@ -25,8 +25,12 @@ namespace Ipocom
 
         public void Dispose()
         {
-            this.m_udp.Close();
+            var udp = m_udp;
             this.m_udp = null;
+            if (udp != null)
+            {
+                udp.Close();
+            }
         }
 
         void BeginRead(UdpState state)
@@ -38,7 +42,7 @@ namespace Ipocom
 
             AsyncCallback callback = (IAsyncResult ar) =>
             {
-                Profiler.BeginSample("BeginReceive AsyncCallback");
+                Profiler.BeginSample("ClientStream AsyncCallback");
                 var udp = m_udp;
                 if (udp == null)
                 {
@@ -55,7 +59,7 @@ namespace Ipocom
                         s.OnError(new ArgumentNullException());
                         return;
                     }
-                    s.OnReceive(bytes);
+                    s.OnReceive(new ArraySegment<byte>(bytes));
                     // next
                     BeginRead(state);
                 }

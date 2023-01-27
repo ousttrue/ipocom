@@ -14,7 +14,7 @@ namespace Ipocom
             m_canceled = true;
         }
 
-        public Action<byte[]> OnReceive;
+        public Action<ArraySegment<byte>> OnReceive;
         public Action<Exception> OnError;
     }
 
