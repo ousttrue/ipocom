@@ -1,7 +1,7 @@
 {
     "name": "jp.ousttrue.ipocom",
     "author": "ousttrue",
-    "version": "2.0.0",
+    "version": "2.1.0",
     "displayName": "Ipocom",
     "description": "Yet another receiver",
     "unity": "2020.3"
