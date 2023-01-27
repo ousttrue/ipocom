@@ -51,7 +51,7 @@ namespace Ipocom.SonyMotionFormat
             }
         }
 
-        public static object Parse(byte[] bytes)
+        public static object Parse(ArraySegment<byte> bytes)
         {
             var r = new BytesReader(bytes);
 
