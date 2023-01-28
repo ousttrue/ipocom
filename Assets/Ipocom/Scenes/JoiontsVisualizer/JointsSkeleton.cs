@@ -20,6 +20,25 @@ class JointsSkeleton : IDisposable
             Transform.localPosition = m.GetColumn(3);
             Transform.localRotation = m.rotation;
         }
+
+        public void SetTail(Joint child)
+        {
+            var _y = child.Initial.GetColumn(3);
+            var tail = new Vector3(_y.x, _y.y, _y.z);
+            var y = tail.normalized;
+            var z = Vector3.forward;
+            var x = Vector3.Cross(y, z).normalized;
+            z = Vector3.Cross(x, y).normalized;
+
+            var r = new Matrix4x4(
+                new Vector4(x.x, x.y, x.z, 0),
+                new Vector4(y.x, y.y, y.z, 0),
+                new Vector4(z.x, z.y, z.z, 0),
+                new Vector4(0, 0, 0, 1)
+                );
+            var s = Matrix4x4.Scale(new Vector3(0.02f, tail.magnitude, 0.02f));
+            Shape = r * s;
+        }
     }
     Dictionary<int, Joint> m_joints = new Dictionary<int, Joint>();
     Dictionary<Transform, Transform> m_parentMap = new Dictionary<Transform, Transform>();
@@ -67,8 +86,14 @@ class JointsSkeleton : IDisposable
     {
         if (m_joints.TryGetValue(parentId, out Joint parent))
         {
-            m_parentMap[m_joints[id].Transform] = parent.Transform;
+            var child = m_joints[id];
+            m_parentMap[child.Transform] = parent.Transform;
         }
+    }
+
+    public void SetTail(int head, int tail)
+    {
+        m_joints[head].SetTail(m_joints[tail]);
     }
 
     (Joint, Matrix4x4 ParentMatrix) GetJoint(int id)

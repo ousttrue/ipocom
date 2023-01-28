@@ -29,6 +29,10 @@ public class JointsVisualizer : MonoBehaviour
             var bone = skeleton.skdf.Bones[i].Value;
             m_skeleton.SetParent(bone.BoneId.Value.BoneId, bone.ParentBoneId.Value.ParentBoneId);
         }
+        foreach (var (head, tail) in Ipocom.SonyMotionFormat.Definition.HeadTailPairs)
+        {
+            m_skeleton.SetTail((int)head, (int)tail);
+        }
     }
 
     public void OnFrame(Ipocom.SonyMotionFormat.FrameMessage frame)
@@ -65,7 +69,7 @@ public class JointsVisualizer : MonoBehaviour
             //  +-+
             //  0 1
             //  ------> x
-            var s = 1.0f;
+            var s = 0.5f;
             var v0 = new Vector3(-s, 0, -s);
             var v1 = new Vector3(+s, 0, -s);
             var v2 = new Vector3(+s, 0, +s);
