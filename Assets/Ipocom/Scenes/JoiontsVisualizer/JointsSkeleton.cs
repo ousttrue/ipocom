@@ -74,12 +74,8 @@ class JointsSkeleton : IDisposable
         {
             m_colors.Add(Color.white);
         }
-        m_colors[id] = new Vector4(
-            UnityEngine.Random.value,
-            UnityEngine.Random.value,
-            UnityEngine.Random.value,
-            1
-        );
+        Color color = Ipocom.SonyMotionFormat.Definition.ColorMap[(Ipocom.SonyMotionFormat.Bones)id];
+        m_colors[id] = color;
     }
 
     public void SetParent(int id, int parentId)
@@ -114,8 +110,8 @@ class JointsSkeleton : IDisposable
         foreach (var id in m_joints.Keys.OrderBy(x => x))
         {
             var (joint, matrix) = GetJoint(id);
-            joint.ApplyTransform(matrix, joint.Initial);
-            SetMatrix(id, joint.Transform.localToWorldMatrix);
+            // joint.ApplyTransform(matrix, joint.Initial);
+            SetMatrix(id, joint.Initial);
         }
     }
 
