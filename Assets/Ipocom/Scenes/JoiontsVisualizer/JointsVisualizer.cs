@@ -1,19 +1,36 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class JointsVisualizer : MonoBehaviour
 {
-    public Ipocom.SonyMotionFormat.SkeletonMessage m_skeleton;
-    public Ipocom.SonyMotionFormat.FrameMessage m_frame;
+    JointsSkeleton m_skeleton;
 
     public void OnSkeleton(Ipocom.SonyMotionFormat.SkeletonMessage skeleton)
     {
-        m_skeleton = skeleton;
+        if (m_skeleton != null)
+        {
+            m_skeleton.Dispose();
+        }
+
+        m_skeleton = new JointsSkeleton(transform);
+        for (int i = 0; i < skeleton.skdf.Bones.Length; ++i)
+        {
+            var bone = skeleton.skdf.Bones[i].Value;
+            m_skeleton.AddJoint(bone.BoneId.Value.BoneId, bone.Transformation.Value.Rotation(), bone.Transformation.Value.Translation());
+        }
     }
 
     public void OnFrame(Ipocom.SonyMotionFormat.FrameMessage frame)
     {
-        m_frame = frame;
+        if (m_skeleton == null)
+        {
+            return;
+        }
+        foreach (var bone in frame.fram.BoneTransformations)
+        {
+            var boneTransformation = bone.Value.Transformation.Value;
+            var joint = m_skeleton.GetJoint(bone.Value.BoneId.Value.BoneId);
+            joint.localPosition = boneTransformation.Translation();
+            joint.localRotation = boneTransformation.Rotation();
+        }
     }
 }
