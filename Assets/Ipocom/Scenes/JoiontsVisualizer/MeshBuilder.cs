@@ -5,10 +5,6 @@ class MeshBuilder
 {
     List<Vector3> m_vertices = new List<Vector3>();
     List<int> m_indices = new List<int>();
-    // public void PushTriangle(Vector3 v0, Vector3 v1, Vector3 v2)
-    // {
-
-    // }
 
     public void PushQuadrangle(Vector3 v0, Vector3 v1, Vector3 v2, Vector3 v3)
     {

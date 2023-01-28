@@ -7,10 +7,12 @@ using UnityEngine;
 class JointsSkeleton : IDisposable
 {
     Transform m_root;
-    struct Joint
+    class Joint
     {
         public Transform Transform;
         public Matrix4x4 Initial;
+        public Matrix4x4 Shape = Matrix4x4.Scale(new Vector3(0.02f, 0.02f, 0.02f));
+        public Matrix4x4 Matrix => Transform.localToWorldMatrix * Shape;
 
         public void ApplyTransform(Matrix4x4 parent, Matrix4x4 local)
         {
@@ -96,7 +98,7 @@ class JointsSkeleton : IDisposable
     {
         var (joint, parentMatrix) = GetJoint(id);
         joint.ApplyTransform(parentMatrix, m);
-        m_matrices[id] = joint.Transform.localToWorldMatrix;
+        m_matrices[id] = joint.Matrix;
     }
 
     public void Draw(Mesh mesh, Material material)

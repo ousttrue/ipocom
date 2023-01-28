@@ -55,6 +55,8 @@ public class JointsVisualizer : MonoBehaviour
         {
             var builder = new MeshBuilder();
 
+            // reauire Y-Up 1.0f size Shape.
+            //
             //    7 6
             //    +-+
             //   / /|
@@ -63,7 +65,7 @@ public class JointsVisualizer : MonoBehaviour
             //  +-+
             //  0 1
             //  ------> x
-            var s = CUBE_SIZE;
+            var s = 1.0f;
             var v0 = new Vector3(-s, 0, -s);
             var v1 = new Vector3(+s, 0, -s);
             var v2 = new Vector3(+s, 0, +s);
