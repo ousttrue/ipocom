@@ -3,26 +3,28 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-struct Joint
-{
-    public Transform Transform;
-    public Matrix4x4 Initial;
-
-    public void ApplyTransform(Matrix4x4 parent, Matrix4x4 local)
-    {
-        var m = parent * local;
-        Transform.localPosition = m.GetColumn(3);
-        Transform.localRotation = m.rotation;
-    }
-}
 
 class JointsSkeleton : IDisposable
 {
-    const float CUBE_SIZE = 0.05f;
-
     Transform m_root;
+    struct Joint
+    {
+        public Transform Transform;
+        public Matrix4x4 Initial;
+
+        public void ApplyTransform(Matrix4x4 parent, Matrix4x4 local)
+        {
+            var m = parent * local;
+            Transform.localPosition = m.GetColumn(3);
+            Transform.localRotation = m.rotation;
+        }
+    }
     Dictionary<int, Joint> m_joints = new Dictionary<int, Joint>();
     Dictionary<Transform, Transform> m_parentMap = new Dictionary<Transform, Transform>();
+
+    Matrix4x4[] m_matrices = new Matrix4x4[128];
+    List<Vector4> m_colors = new List<Vector4>();
+    MaterialPropertyBlock m_props = new MaterialPropertyBlock();
 
     public JointsSkeleton(Transform root)
     {
@@ -47,9 +49,16 @@ class JointsSkeleton : IDisposable
             Initial = Matrix4x4.Rotate(r) * Matrix4x4.TRS(t, r, Vector3.one),
         };
 
-        var cube = GameObject.CreatePrimitive(PrimitiveType.Cube).transform;
-        cube.localScale = new Vector3(CUBE_SIZE, CUBE_SIZE, CUBE_SIZE);
-        cube.SetParent(joint);
+        while (m_colors.Count <= id)
+        {
+            m_colors.Add(Color.white);
+        }
+        m_colors[id] = new Vector4(
+            UnityEngine.Random.value,
+            UnityEngine.Random.value,
+            UnityEngine.Random.value,
+            1
+        );
     }
 
     public void SetParent(int id, int parentId)
@@ -60,7 +69,7 @@ class JointsSkeleton : IDisposable
         }
     }
 
-    public (Joint, Matrix4x4 ParentMatrix) GetJoint(int id)
+    (Joint, Matrix4x4 ParentMatrix) GetJoint(int id)
     {
         var joint = m_joints[id];
         if (m_parentMap.TryGetValue(joint.Transform, out Transform parent))
@@ -79,6 +88,20 @@ class JointsSkeleton : IDisposable
         {
             var (joint, matrix) = GetJoint(id);
             joint.ApplyTransform(matrix, joint.Initial);
+            SetMatrix(id, joint.Transform.localToWorldMatrix);
         }
+    }
+
+    public void SetMatrix(int id, Matrix4x4 m)
+    {
+        var (joint, parentMatrix) = GetJoint(id);
+        joint.ApplyTransform(parentMatrix, m);
+        m_matrices[id] = joint.Transform.localToWorldMatrix;
+    }
+
+    public void Draw(Mesh mesh, Material material)
+    {
+        m_props.SetVectorArray("_Color", m_colors);
+        Graphics.DrawMeshInstanced(mesh, 0, material, m_matrices, m_colors.Count, m_props);
     }
 }
