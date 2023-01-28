@@ -45,5 +45,10 @@ namespace Ipocom.SonyMotionFormat
         {
             return new Vector3(tx, ty, tz);
         }
+
+        public Matrix4x4 Matrix()
+        {
+            return Matrix4x4.TRS(Translation(), Rotation(), Vector3.one);
+        }
     }
 }

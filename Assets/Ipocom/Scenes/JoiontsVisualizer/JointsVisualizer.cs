@@ -17,6 +17,11 @@ public class JointsVisualizer : MonoBehaviour
             var bone = skeleton.skdf.Bones[i].Value;
             m_skeleton.AddJoint(bone.BoneId.Value.BoneId, bone.Transformation.Value.Rotation(), bone.Transformation.Value.Translation());
         }
+        for (int i = 0; i < skeleton.skdf.Bones.Length; ++i)
+        {
+            var bone = skeleton.skdf.Bones[i].Value;
+            m_skeleton.SetParent(bone.BoneId.Value.BoneId, bone.ParentBoneId.Value.ParentBoneId);
+        }
     }
 
     public void OnFrame(Ipocom.SonyMotionFormat.FrameMessage frame)
@@ -28,9 +33,8 @@ public class JointsVisualizer : MonoBehaviour
         foreach (var bone in frame.fram.BoneTransformations)
         {
             var boneTransformation = bone.Value.Transformation.Value;
-            var joint = m_skeleton.GetJoint(bone.Value.BoneId.Value.BoneId);
-            joint.localPosition = boneTransformation.Translation();
-            joint.localRotation = boneTransformation.Rotation();
+            var (joint, parentMatrix) = m_skeleton.GetJoint(bone.Value.BoneId.Value.BoneId);
+            joint.ApplyTransform(parentMatrix, boneTransformation.Matrix());
         }
     }
 }
