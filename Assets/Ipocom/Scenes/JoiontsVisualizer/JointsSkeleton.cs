@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 struct Joint
@@ -9,7 +10,7 @@ struct Joint
 
     public void ApplyTransform(Matrix4x4 parent, Matrix4x4 local)
     {
-        var m = parent * Initial * local;
+        var m = parent * local;
         Transform.localPosition = m.GetColumn(3);
         Transform.localRotation = m.rotation;
     }
@@ -17,6 +18,8 @@ struct Joint
 
 class JointsSkeleton : IDisposable
 {
+    const float CUBE_SIZE = 0.05f;
+
     Transform m_root;
     Dictionary<int, Joint> m_joints = new Dictionary<int, Joint>();
     Dictionary<Transform, Transform> m_parentMap = new Dictionary<Transform, Transform>();
@@ -45,8 +48,7 @@ class JointsSkeleton : IDisposable
         };
 
         var cube = GameObject.CreatePrimitive(PrimitiveType.Cube).transform;
-        var cubeSize = 0.08f;
-        cube.localScale = new Vector3(cubeSize, cubeSize, cubeSize);
+        cube.localScale = new Vector3(CUBE_SIZE, CUBE_SIZE, CUBE_SIZE);
         cube.SetParent(joint);
     }
 
@@ -68,6 +70,15 @@ class JointsSkeleton : IDisposable
         else
         {
             return (joint, Matrix4x4.identity);
+        }
+    }
+
+    public void InitPose()
+    {
+        foreach (var id in m_joints.Keys.OrderBy(x => x))
+        {
+            var (joint, matrix) = GetJoint(id);
+            joint.ApplyTransform(matrix, joint.Initial);
         }
     }
 }

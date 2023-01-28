@@ -3,6 +3,12 @@ using UnityEngine;
 
 namespace Ipocom.SonyMotionFormat
 {
+    public enum Coords
+    {
+        RighHandledOriginal,
+        LeftHandedReverseX,
+    }
+
     [Serializable]
     public struct Tran
     {
@@ -31,24 +37,49 @@ namespace Ipocom.SonyMotionFormat
             };
         }
 
-        public Quaternion Rotation()
+        public Quaternion Rotation(Coords coords)
         {
-            return new Quaternion(
-                rx,
-                ry,
-                rz,
-                rw
-            );
+            switch (coords)
+            {
+                case Coords.RighHandledOriginal:
+                    return new Quaternion(
+                        rx,
+                        ry,
+                        rz,
+                        rw
+                    );
+
+                case Coords.LeftHandedReverseX:
+                    return new Quaternion(
+                        -rx,
+                        ry,
+                        rz,
+                        -rw
+                    );
+
+                default:
+                    throw new NotImplementedException();
+            }
         }
 
-        public Vector3 Translation()
+        public Vector3 Translation(Coords coords)
         {
-            return new Vector3(tx, ty, tz);
+            switch (coords)
+            {
+                case Coords.RighHandledOriginal:
+                    return new Vector3(tx, ty, tz);
+
+                case Coords.LeftHandedReverseX:
+                    return new Vector3(-tx, ty, tz);
+
+                default:
+                    throw new NotImplementedException();
+            }
         }
 
-        public Matrix4x4 Matrix()
+        public Matrix4x4 Matrix(Coords coords)
         {
-            return Matrix4x4.TRS(Translation(), Rotation(), Vector3.one);
+            return Matrix4x4.TRS(Translation(coords), Rotation(coords), Vector3.one);
         }
     }
 }
