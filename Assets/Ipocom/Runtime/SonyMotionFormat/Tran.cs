@@ -19,6 +19,25 @@ namespace Ipocom.SonyMotionFormat
         public float tx;
         public float ty;
         public float tz;
+        public override bool Equals(object obj)
+        {
+            if (obj is Tran rhs)
+            {
+                return rx == rhs.rx
+                    && ry == rhs.ry
+                    && rz == rhs.rz
+                    && rw == rhs.rw
+                    && tx == rhs.tx
+                    && ty == rhs.ty
+                    && tz == rhs.tz
+                    ;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         public static Tran FromBox(Box tran)
         {
             if (tran.Type != BoxTypes.Tran)

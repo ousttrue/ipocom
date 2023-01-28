@@ -17,6 +17,7 @@ namespace Ipocom
         /// UDP 受信スレッドからメインスレッドデータを渡すのに使う
         /// </summary>
         ConcurrentQueue<object> m_queue = new ConcurrentQueue<object>();
+        Ipocom.SonyMotionFormat.SkeletonMessage m_lastSkeleton;
         int m_skeletonCount = 0;
         int m_frameCount = 0;
         uint m_frameNumber = 0;
@@ -64,6 +65,12 @@ namespace Ipocom
                 switch (data)
                 {
                     case SonyMotionFormat.SkeletonMessage skeleton:
+                        if (m_lastSkeleton.Equals(skeleton))
+                        {
+                            // skip same skeleton
+                            return;
+                        }
+                        m_lastSkeleton = skeleton;
                         ++m_skeletonCount;
                         Debug.Log($"{skeleton}");
                         m_onSkeleton.Invoke(skeleton);

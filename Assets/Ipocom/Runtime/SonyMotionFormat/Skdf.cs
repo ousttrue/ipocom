@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace Ipocom.SonyMotionFormat
@@ -9,6 +11,30 @@ namespace Ipocom.SonyMotionFormat
     {
         // public Bndt[] Bones = new Bndt[Definition.BONE_COUNT];
         public Box<Bndt>[] Bones = new Box<Bndt>[Definition.BONE_COUNT];
+
+        public override bool Equals(object obj)
+        {
+            if (obj is Skdf rhs)
+            {
+                if (Bones != null)
+                {
+                    return Bones.SequenceEqual(rhs.Bones);
+                }
+                else
+                {
+                    return rhs.Bones == null;
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public override int GetHashCode()
+        {
+            return 984241268 + EqualityComparer<Box<Bndt>[]>.Default.GetHashCode(Bones);
+        }
 
         // skdf
         //   bons
