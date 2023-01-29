@@ -6,16 +6,11 @@ public class JointsVisualizer : MonoBehaviour
     const float CUBE_SIZE = 0.025f;
     public Mesh m_mesh;
     public Material m_material;
-    JointsSkeleton m_skeleton;
+    RigidCubes.JointsSkeletonBase m_skeleton;
 
     public void OnSkeleton(Ipocom.SonyMotionFormat.SkeletonMessage skeleton)
     {
-        if (m_skeleton != null)
-        {
-            m_skeleton.Dispose();
-        }
-
-        m_skeleton = new JointsSkeleton(transform);
+        m_skeleton = new RigidCubes.RelativeJointsSkeleton(transform);
         for (int i = 0; i < skeleton.skdf.Bones.Length; ++i)
         {
             var bone = skeleton.skdf.Bones[i].Value;
@@ -48,7 +43,8 @@ public class JointsVisualizer : MonoBehaviour
         {
             var boneTransformation = bone.Value.Transformation.Value;
             var id = bone.Value.BoneId.Value.BoneId;
-            m_skeleton.SetMatrix(id, boneTransformation.Matrix(Ipocom.SonyMotionFormat.Coords.RighHandledOriginal));
+            var (r, t) = boneTransformation.Transform(Ipocom.SonyMotionFormat.Coords.RighHandledOriginal);
+            m_skeleton.SetTransform(id, new RigidCubes.RigidTransform(r, t));
         }
     }
 
@@ -56,7 +52,7 @@ public class JointsVisualizer : MonoBehaviour
     {
         if (m_mesh == null)
         {
-            var builder = new MeshBuilder();
+            var builder = new RigidCubes.MeshBuilder();
 
             // reauire Y-Up 1.0f size Shape.
             //

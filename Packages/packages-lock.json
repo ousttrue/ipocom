@@ -91,6 +91,12 @@
         "com.unity.modules.imgui": "1.0.0"
       }
     },
+    "jp.ousttrue.rigidcubes": {
+      "version": "file:../../RigidCubes/Assets/RigidCubes",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {}
+    },
     "com.unity.modules.ai": {
       "version": "1.0.0",
       "depth": 0,

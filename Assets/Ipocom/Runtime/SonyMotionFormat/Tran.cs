@@ -96,9 +96,9 @@ namespace Ipocom.SonyMotionFormat
             }
         }
 
-        public Matrix4x4 Matrix(Coords coords)
+        public (Quaternion, Vector3) Transform(Coords coords)
         {
-            return Matrix4x4.TRS(Translation(coords), Rotation(coords), Vector3.one);
+            return (Rotation(coords), Translation(coords));
         }
     }
 }

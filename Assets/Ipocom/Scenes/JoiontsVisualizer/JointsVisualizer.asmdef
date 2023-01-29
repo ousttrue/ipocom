@@ -1,0 +1,17 @@
+{
+    "name": "JointsVisualizer",
+    "rootNamespace": "",
+    "references": [
+        "GUID:ff5951b64ccc81e44b66e122d74cf8e5",
+        "GUID:1f8df9e467a8a724f89ad1b157f5ea8b"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
