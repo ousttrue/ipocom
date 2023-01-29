@@ -1,8 +1,13 @@
 {
     "name": "jp.ousttrue.ipocom",
     "author": "ousttrue",
-    "version": "2.1.0",
+    "version": "2.2.0",
     "displayName": "Ipocom",
-    "description": "Yet another receiver",
-    "unity": "2020.3"
+    "description": "Yet another mocopi receiver",
+    "unity": "2020.3",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/ousttrue/ipocom.git"
+    }
 }
