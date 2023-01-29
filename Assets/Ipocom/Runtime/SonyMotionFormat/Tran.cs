@@ -3,6 +3,12 @@ using UnityEngine;
 
 namespace Ipocom.SonyMotionFormat
 {
+    public enum Coords
+    {
+        RighHandledOriginal,
+        LeftHandedReverseX,
+    }
+
     [Serializable]
     public struct Tran
     {
@@ -13,6 +19,25 @@ namespace Ipocom.SonyMotionFormat
         public float tx;
         public float ty;
         public float tz;
+        public override bool Equals(object obj)
+        {
+            if (obj is Tran rhs)
+            {
+                return rx == rhs.rx
+                    && ry == rhs.ry
+                    && rz == rhs.rz
+                    && rw == rhs.rw
+                    && tx == rhs.tx
+                    && ty == rhs.ty
+                    && tz == rhs.tz
+                    ;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         public static Tran FromBox(Box tran)
         {
             if (tran.Type != BoxTypes.Tran)
@@ -31,19 +56,49 @@ namespace Ipocom.SonyMotionFormat
             };
         }
 
-        public Quaternion Rotation()
+        public Quaternion Rotation(Coords coords)
         {
-            return new Quaternion(
-                rx,
-                ry,
-                rz,
-                rw
-            );
+            switch (coords)
+            {
+                case Coords.RighHandledOriginal:
+                    return new Quaternion(
+                        rx,
+                        ry,
+                        rz,
+                        rw
+                    );
+
+                case Coords.LeftHandedReverseX:
+                    return new Quaternion(
+                        -rx,
+                        ry,
+                        rz,
+                        -rw
+                    );
+
+                default:
+                    throw new NotImplementedException();
+            }
         }
 
-        public Vector3 Translation()
+        public Vector3 Translation(Coords coords)
         {
-            return new Vector3(tx, ty, tz);
+            switch (coords)
+            {
+                case Coords.RighHandledOriginal:
+                    return new Vector3(tx, ty, tz);
+
+                case Coords.LeftHandedReverseX:
+                    return new Vector3(-tx, ty, tz);
+
+                default:
+                    throw new NotImplementedException();
+            }
+        }
+
+        public Matrix4x4 Matrix(Coords coords)
+        {
+            return Matrix4x4.TRS(Translation(coords), Rotation(coords), Vector3.one);
         }
     }
 }

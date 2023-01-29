@@ -9,7 +9,7 @@ namespace Ipocom.SonyMotionFormat
     public class Fram
     {
         public UInt32 FrameNumber;
-        public UInt32 Time;
+        public float Time;
         public Box<Btdt>[] BoneTransformations = new Box<Btdt>[27];
 
         // fram
@@ -43,7 +43,7 @@ namespace Ipocom.SonyMotionFormat
             var frames = new Fram
             {
                 FrameNumber = BitConverter.ToUInt32(fnum.Value.Array, fnum.Value.Offset),
-                Time = BitConverter.ToUInt32(time.Value.Array, time.Value.Offset),
+                Time = BitConverter.ToSingle(time.Value.Array, time.Value.Offset),
             };
             using (var pin = new ArrayPin(frames.BoneTransformations))
             {
