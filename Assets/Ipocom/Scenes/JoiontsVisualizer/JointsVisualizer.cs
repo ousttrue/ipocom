@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 public class JointsVisualizer : MonoBehaviour
@@ -21,8 +20,8 @@ public class JointsVisualizer : MonoBehaviour
         {
             var bone = skeleton.skdf.Bones[i].Value;
             m_skeleton.AddJoint(bone.BoneId.Value.BoneId,
-                bone.Transformation.Value.Rotation(Ipocom.SonyMotionFormat.Coords.LeftHandedReverseX),
-                bone.Transformation.Value.Translation(Ipocom.SonyMotionFormat.Coords.LeftHandedReverseX));
+                bone.Transformation.Value.Rotation(Ipocom.SonyMotionFormat.Coords.RighHandledOriginal),
+                bone.Transformation.Value.Translation(Ipocom.SonyMotionFormat.Coords.RighHandledOriginal));
         }
         for (int i = 0; i < skeleton.skdf.Bones.Length; ++i)
         {
@@ -49,7 +48,7 @@ public class JointsVisualizer : MonoBehaviour
         {
             var boneTransformation = bone.Value.Transformation.Value;
             var id = bone.Value.BoneId.Value.BoneId;
-            m_skeleton.SetMatrix(id, boneTransformation.Matrix(Ipocom.SonyMotionFormat.Coords.LeftHandedReverseX));
+            m_skeleton.SetMatrix(id, boneTransformation.Matrix(Ipocom.SonyMotionFormat.Coords.RighHandledOriginal));
         }
     }
 
