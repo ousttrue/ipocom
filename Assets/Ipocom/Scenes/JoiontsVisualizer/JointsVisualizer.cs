@@ -1,15 +1,15 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class JointsVisualizer : MonoBehaviour
 {
     public bool m_init;
     const float CUBE_SIZE = 0.025f;
-    public Material m_material;
     RigidCubes.JointsSkeletonBase m_skeleton;
 
     public void OnSkeleton(Ipocom.SonyMotionFormat.SkeletonMessage skeleton)
     {
-        if(m_skeleton!=null)
+        if (m_skeleton != null)
         {
             m_skeleton.Dispose();
         }
@@ -28,9 +28,40 @@ public class JointsVisualizer : MonoBehaviour
         }
         foreach (var (head, tail) in Ipocom.SonyMotionFormat.Definition.HeadTailPairs)
         {
-            m_skeleton.SetTail((int)head, (int)tail);
+            m_skeleton.SetTail((int)head, (int)tail, ForwardMap[head]);
         }
     }
+
+    Dictionary<Ipocom.SonyMotionFormat.Bones, Vector3> ForwardMap = new Dictionary<Ipocom.SonyMotionFormat.Bones, Vector3>
+    {
+        {Ipocom.SonyMotionFormat.Bones.root, Vector3.forward},
+        {Ipocom.SonyMotionFormat.Bones.torso_1, Vector3.forward},
+        {Ipocom.SonyMotionFormat.Bones.torso_2, Vector3.forward},
+        {Ipocom.SonyMotionFormat.Bones.torso_3, Vector3.forward},
+        {Ipocom.SonyMotionFormat.Bones.torso_4, Vector3.forward},
+        {Ipocom.SonyMotionFormat.Bones.torso_5, Vector3.forward},
+        {Ipocom.SonyMotionFormat.Bones.torso_6, Vector3.forward},
+        {Ipocom.SonyMotionFormat.Bones.torso_7, Vector3.forward},
+        {Ipocom.SonyMotionFormat.Bones.neck_1, Vector3.forward},
+        {Ipocom.SonyMotionFormat.Bones.neck_2, Vector3.forward},
+        {Ipocom.SonyMotionFormat.Bones.head, Vector3.forward},
+        {Ipocom.SonyMotionFormat.Bones.l_shoulder, Vector3.forward},
+        {Ipocom.SonyMotionFormat.Bones.l_up_arm, Vector3.forward},
+        {Ipocom.SonyMotionFormat.Bones.l_low_arm, Vector3.forward},
+        {Ipocom.SonyMotionFormat.Bones.l_hand, Vector3.forward},
+        {Ipocom.SonyMotionFormat.Bones.r_shoulder, Vector3.forward},
+        {Ipocom.SonyMotionFormat.Bones.r_up_arm, Vector3.forward},
+        {Ipocom.SonyMotionFormat.Bones.r_low_arm, Vector3.forward},
+        {Ipocom.SonyMotionFormat.Bones.r_hand, Vector3.forward},
+        {Ipocom.SonyMotionFormat.Bones.l_up_leg, Vector3.forward},
+        {Ipocom.SonyMotionFormat.Bones.l_low_leg, Vector3.forward},
+        {Ipocom.SonyMotionFormat.Bones.l_foot, Vector3.forward},
+        {Ipocom.SonyMotionFormat.Bones.l_toes, Vector3.forward},
+        {Ipocom.SonyMotionFormat.Bones.r_up_leg, Vector3.forward},
+        {Ipocom.SonyMotionFormat.Bones.r_low_leg, Vector3.forward},
+        {Ipocom.SonyMotionFormat.Bones.r_foot, Vector3.forward},
+        {Ipocom.SonyMotionFormat.Bones.r_toes, Vector3.forward},
+    };
 
     public void OnFrame(Ipocom.SonyMotionFormat.FrameMessage frame)
     {
@@ -59,7 +90,7 @@ public class JointsVisualizer : MonoBehaviour
             {
                 m_skeleton.InitPose();
             }
-            m_skeleton.Draw(m_material);
+            m_skeleton.Draw();
         }
     }
 }
