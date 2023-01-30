@@ -4,12 +4,15 @@ public class JointsVisualizer : MonoBehaviour
 {
     public bool m_init;
     const float CUBE_SIZE = 0.025f;
-    public Mesh m_mesh;
     public Material m_material;
     RigidCubes.JointsSkeletonBase m_skeleton;
 
     public void OnSkeleton(Ipocom.SonyMotionFormat.SkeletonMessage skeleton)
     {
+        if(m_skeleton!=null)
+        {
+            m_skeleton.Dispose();
+        }
         m_skeleton = new RigidCubes.RelativeJointsSkeleton(transform);
         for (int i = 0; i < skeleton.skdf.Bones.Length; ++i)
         {
@@ -48,44 +51,6 @@ public class JointsVisualizer : MonoBehaviour
         }
     }
 
-    void Start()
-    {
-        if (m_mesh == null)
-        {
-            var builder = new RigidCubes.MeshBuilder();
-
-            // reauire Y-Up 1.0f size Shape.
-            //
-            //    7 6
-            //    +-+
-            //   / /|
-            // 4+-+5+2
-            //  | |/
-            //  +-+
-            //  0 1
-            //  ------> x
-            var s = 0.5f;
-            var v0 = new Vector3(-s, 0, -s);
-            var v1 = new Vector3(+s, 0, -s);
-            var v2 = new Vector3(+s, 0, +s);
-            var v3 = new Vector3(-s, 0, +s);
-            var v4 = new Vector3(-s, 2 * s, -s);
-            var v5 = new Vector3(+s, 2 * s, -s);
-            var v6 = new Vector3(+s, 2 * s, +s);
-            var v7 = new Vector3(-s, 2 * s, +s);
-
-            builder.PushQuadrangle(v0, v1, v2, v3);
-            builder.PushQuadrangle(v5, v4, v7, v6);
-            builder.PushQuadrangle(v1, v0, v4, v5);
-            builder.PushQuadrangle(v2, v1, v5, v6);
-            builder.PushQuadrangle(v3, v2, v6, v7);
-            builder.PushQuadrangle(v0, v3, v7, v4);
-
-            m_mesh = builder.ToMesh();
-            m_mesh.name = nameof(JointsVisualizer);
-        }
-    }
-
     void Update()
     {
         if (m_skeleton != null)
@@ -94,7 +59,7 @@ public class JointsVisualizer : MonoBehaviour
             {
                 m_skeleton.InitPose();
             }
-            m_skeleton.Draw(m_mesh, m_material);
+            m_skeleton.Draw(m_material);
         }
     }
 }
